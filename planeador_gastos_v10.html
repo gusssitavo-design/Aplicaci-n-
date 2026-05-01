@@ -1,0 +1,467 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);}
+.app{max-width:380px;margin:0 auto;padding:14px;}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:14px;}
+.tab{padding:9px 4px;font-size:12px;font-weight:500;cursor:pointer;background:none;border:none;color:var(--color-text-secondary);}
+.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);}
+.section{display:none;}.section.visible{display:block;}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:10px;}
+.card-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;letter-spacing:.04em;}
+.field-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.field-row:last-child{margin-bottom:0;}
+.field-label{font-size:12px;color:var(--color-text-secondary);}
+.field-row input,.field-row select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans);}
+.field-row input:focus,.field-row select:focus{outline:none;border-color:var(--color-border-primary);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.add-btn{width:100%;padding:9px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;cursor:pointer;font-family:var(--font-sans);font-weight:500;margin-top:6px;}
+.add-btn:hover{background:var(--color-background-secondary);}
+.item-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.item-row:last-child{border-bottom:none;padding-bottom:0;}
+.item-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.item-info{flex:1;min-width:0;}
+.item-desc{font-size:13px;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-meta{font-size:11px;color:var(--color-text-secondary);margin-top:1px;}
+.item-amount{font-size:13px;font-weight:500;flex-shrink:0;}
+.item-del{background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:13px;padding:2px 5px;border-radius:4px;opacity:.5;flex-shrink:0;}
+.item-del:hover{opacity:1;background:var(--color-background-secondary);}
+.green{color:#1D9E75;}.red{color:#D85A30;}
+.cat-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;display:inline-block;}
+.prov-badge{font-size:10px;padding:1px 5px;border-radius:3px;background:#FAEEDA;color:#633806;font-weight:500;}
+.recur-badge{font-size:10px;padding:1px 5px;border-radius:3px;background:#E6F1FB;color:#0C447C;font-weight:500;}
+.week-block{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:8px;overflow:hidden;}
+.week-block.negative{border-color:#F09595;}
+.week-summary{padding:12px;cursor:pointer;user-select:none;}
+.week-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.week-lbl{font-size:12px;font-weight:500;color:var(--color-text-primary);}
+.bar-wrap{height:4px;background:var(--color-background-secondary);border-radius:2px;margin-bottom:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.week-footer{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--color-text-secondary);}
+.chevron{display:inline-block;transition:transform .2s;}
+.chevron.open{transform:rotate(180deg);}
+.week-detail{display:none;border-top:0.5px solid var(--color-border-tertiary);padding:8px 12px;}
+.week-detail.open{display:block;}
+.detail-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.detail-row:last-child{border-bottom:none;}
+.detail-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.detail-desc{flex:1;font-size:12px;color:var(--color-text-primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.detail-badges{display:flex;gap:4px;flex-shrink:0;}
+.detail-amount{font-size:12px;font-weight:500;flex-shrink:0;}
+.month-block{margin-bottom:16px;}
+.month-header{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-secondary);margin-bottom:8px;}
+.month-title{font-size:14px;font-weight:500;color:var(--color-text-primary);}
+.month-totals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
+.month-stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 10px;}
+.month-stat-lbl{font-size:10px;color:var(--color-text-secondary);margin-bottom:2px;}
+.month-stat-val{font-size:13px;font-weight:500;}
+.empty{text-align:center;padding:20px;font-size:13px;color:var(--color-text-secondary);}
+.tag-income{background:#E1F5EE;color:#085041;}
+.tag-food{background:#FAECE7;color:#712B13;}
+.tag-transport{background:#E6F1FB;color:#0C447C;}
+.tag-rent{background:#FAEEDA;color:#633806;}
+.tag-entertainment{background:#EEEDFE;color:#3C3489;}
+.tag-health{background:#FBEAF0;color:#72243E;}
+.tag-other{background:#F1EFE8;color:#444441;}
+.tag-savings{background:#EAF3DE;color:#27500A;}
+</style>
+
+<div class="app">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('plan')">Planear</button>
+    <button class="tab" onclick="showTab('recurrentes')">Recurrentes</button>
+    <button class="tab" onclick="showTab('resumen')">Resumen</button>
+  </div>
+
+  <div class="section visible" id="sec-plan">
+    <div class="card">
+      <div class="card-title">Ingreso puntual</div>
+      <div class="two-col">
+        <div class="field-row"><label class="field-label">Fecha de cobro</label><input type="date" id="inc-date"></div>
+        <div class="field-row"><label class="field-label">Monto ($)</label><input type="number" id="inc-amount" placeholder="0.00" min="0"></div>
+      </div>
+      <div class="field-row"><label class="field-label">Descripción</label><input type="text" id="inc-desc" placeholder="Ej. Sueldo, bono..."></div>
+      <button class="add-btn" onclick="addItem('income')">+ Agregar ingreso</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Gasto puntual</div>
+      <div class="two-col">
+        <div class="field-row"><label class="field-label">Fecha de gasto</label><input type="date" id="exp-date"></div>
+        <div class="field-row"><label class="field-label">Monto ($)</label><input type="number" id="exp-amount" placeholder="0.00" min="0"></div>
+      </div>
+      <div class="field-row"><label class="field-label">Descripción</label><input type="text" id="exp-desc" placeholder="Ej. Renta, despensa..."></div>
+      <div class="field-row"><label class="field-label">Categoría</label>
+        <select id="exp-cat">
+          <option value="food">Comida y despensa</option>
+          <option value="transport">Transporte</option>
+          <option value="rent">Renta / servicios</option>
+          <option value="health">Salud</option>
+          <option value="entertainment">Entretenimiento</option>
+          <option value="savings">Ahorro</option>
+          <option value="other">Otro</option>
+        </select>
+      </div>
+      <button class="add-btn" onclick="addItem('expense')">+ Agregar gasto</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Movimientos planeados</div>
+      <div id="all-items"><div class="empty">Sin movimientos aún.</div></div>
+    </div>
+  </div>
+
+  <div class="section" id="sec-recurrentes">
+    <div class="card">
+      <div class="card-title">Nuevo ingreso recurrente</div>
+      <div class="field-row"><label class="field-label">Descripción</label><input type="text" id="rinc-desc" placeholder="Ej. Sueldo semanal"></div>
+      <div class="two-col">
+        <div class="field-row"><label class="field-label">Monto ($)</label><input type="number" id="rinc-amount" placeholder="0.00" min="0"></div>
+        <div class="field-row"><label class="field-label">Frecuencia</label>
+          <select id="rinc-freq">
+            <option value="weekly">Cada semana</option>
+            <option value="biweekly">Cada 2 semanas</option>
+            <option value="monthly">Mensual</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row"><label class="field-label">Primer cobro (fecha exacta)</label><input type="date" id="rinc-start"></div>
+      <button class="add-btn" onclick="addRecurring('income')">+ Agregar ingreso recurrente</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Nuevo gasto recurrente</div>
+      <div class="field-row"><label class="field-label">Descripción</label><input type="text" id="rexp-desc" placeholder="Ej. Netflix, renta..."></div>
+      <div class="two-col">
+        <div class="field-row"><label class="field-label">Monto ($)</label><input type="number" id="rexp-amount" placeholder="0.00" min="0"></div>
+        <div class="field-row"><label class="field-label">Frecuencia</label>
+          <select id="rexp-freq">
+            <option value="weekly">Cada semana</option>
+            <option value="biweekly">Cada 2 semanas</option>
+            <option value="monthly">Mensual</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row"><label class="field-label">Categoría</label>
+        <select id="rexp-cat">
+          <option value="food">Comida</option>
+          <option value="transport">Transporte</option>
+          <option value="rent">Renta / servicios</option>
+          <option value="health">Salud</option>
+          <option value="entertainment">Entretenimiento</option>
+          <option value="savings">Ahorro</option>
+          <option value="other">Otro</option>
+        </select>
+      </div>
+      <div class="field-row"><label class="field-label">Fecha del primer cobro real</label><input type="date" id="rexp-start"></div>
+      <button class="add-btn" onclick="addRecurring('expense')">+ Agregar gasto recurrente</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Recurrentes activos</div>
+      <div id="recurring-list"><div class="empty">Sin recurrentes aún.</div></div>
+    </div>
+  </div>
+
+  <div class="section" id="sec-resumen">
+    <div id="month-summary"><div class="empty">Sin datos aún.</div></div>
+  </div>
+</div>
+
+<script>
+let items = JSON.parse(localStorage.getItem('pg_items_v10') || '[]');
+let recurring = JSON.parse(localStorage.getItem('pg_rec_v10') || '[]');
+let openWeeks = {};
+
+const CAT_LABELS={income:'Ingreso',food:'Comida y despensa',transport:'Transporte',rent:'Renta / servicios',health:'Salud',entertainment:'Entretenimiento',savings:'Ahorro',other:'Otro'};
+const CAT_COLORS={income:'tag-income',food:'tag-food',transport:'tag-transport',rent:'tag-rent',health:'tag-health',entertainment:'tag-entertainment',savings:'tag-savings',other:'tag-other'};
+const DOT_COLORS={income:'#1D9E75',food:'#D85A30',transport:'#378ADD',rent:'#EF9F27',health:'#D4537E',entertainment:'#7F77DD',savings:'#639922',other:'#888780'};
+const FREQ_LABELS={weekly:'Cada semana',biweekly:'Cada 2 semanas',monthly:'Mensual'};
+
+function fmt(n){return '$'+Math.abs(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function fmtDate(d){if(!d)return '';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0].slice(2);}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function save(){localStorage.setItem('pg_items_v10',JSON.stringify(items));localStorage.setItem('pg_rec_v10',JSON.stringify(recurring));}
+
+function weekFriday(dateStr){
+  const d=new Date(dateStr+'T12:00:00');
+  const sinceLastFri=(d.getDay()+2)%7;
+  const fri=new Date(d);fri.setDate(d.getDate()-sinceLastFri);
+  return fri.toISOString().split('T')[0];
+}
+
+// THE KEY FUNCTION: compute the earliest income friday across ALL items (manual + recurring)
+// This is the absolute floor — no provision can be placed before this week
+function earliestIncomeFriday(){
+  const incomeDates = [];
+
+  // Manual income items
+  items.filter(i=>i.type==='income').forEach(i=>incomeDates.push(i.date));
+
+  // Recurring income: use their start date
+  recurring.filter(r=>r.type==='income').forEach(r=>incomeDates.push(r.start));
+
+  if(incomeDates.length===0) return null; // no income defined yet
+  const fridays = incomeDates.map(d=>weekFriday(d)).sort();
+  return fridays[0]; // earliest
+}
+
+function fridaysBefore(dueStr, floorStr, lookbackDays){
+  const due=new Date(dueStr+'T12:00:00');
+  const floor=new Date(floorStr+'T12:00:00');
+  const frids=[];
+  for(let i=1;i<=lookbackDays;i++){
+    const d=new Date(due);
+    d.setDate(due.getDate()-i);
+    // Only include fridays that are >= floor
+    if(d.getDay()===5 && d>=floor){
+      frids.unshift(d.toISOString().split('T')[0]);
+    }
+  }
+  // If none found, use the friday of the due week (if >= floor), else use floor itself
+  if(frids.length===0){
+    const friDue=weekFriday(dueStr);
+    const friDueD=new Date(friDue+'T12:00:00');
+    frids.push(friDueD>=floor ? friDue : floorStr);
+  }
+  return frids;
+}
+
+function generateRecurring(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const horizon=new Date(today);horizon.setDate(horizon.getDate()+112);
+  const generated=[];
+
+  // Compute the global income floor ONCE before generating
+  const incomeFloor = earliestIncomeFriday();
+
+  recurring.forEach(r=>{
+    const startD=new Date(r.start+'T12:00:00');
+
+    if(r.type==='income'){
+      let cursor=new Date(startD);let safety=0;
+      while(cursor<=horizon&&safety<60){
+        safety++;
+        const ds=cursor.toISOString().split('T')[0];
+        generated.push({id:r.id+'_'+ds,type:'income',date:ds,amount:r.amount,desc:r.desc,cat:'income',isRecurring:true,provision:false});
+        if(r.freq==='weekly') cursor.setDate(cursor.getDate()+7);
+        else if(r.freq==='biweekly') cursor.setDate(cursor.getDate()+14);
+        else cursor.setMonth(cursor.getMonth()+1);
+      }
+    } else {
+      // For expense provisions: floor = MAX(earliest income friday, createdAt)
+      // This ensures provisions never fall before first income AND never before item was created
+      const createdFloor = r.createdAt || r.start;
+      let floorStr = createdFloor;
+      if(incomeFloor){
+        // Take the later of the two floors
+        floorStr = incomeFloor > createdFloor ? incomeFloor : createdFloor;
+      }
+
+      if(r.freq==='weekly'){
+        let cursor=new Date(startD);let safety=0;
+        while(cursor<=horizon&&safety<60){
+          safety++;
+          const ds=cursor.toISOString().split('T')[0];
+          const fri=weekFriday(ds);
+          // For weekly, just make sure it's >= floor
+          if(fri>=floorStr){
+            generated.push({id:r.id+'_'+ds,type:'expense',date:fri,amount:r.amount,desc:r.desc,cat:r.cat,isRecurring:true,provision:false});
+          }
+          cursor.setDate(cursor.getDate()+7);
+        }
+      } else if(r.freq==='biweekly'){
+        let cursor=new Date(startD);let safety=0;
+        while(cursor<=horizon&&safety<60){
+          safety++;
+          const dueStr=cursor.toISOString().split('T')[0];
+          const frids=fridaysBefore(dueStr,floorStr,14);
+          const n=frids.length;const portion=r.amount/n;
+          frids.forEach((fri,i)=>generated.push({id:r.id+'_bw'+i+'_'+dueStr,type:'expense',date:fri,amount:portion,desc:r.desc+' (reserva '+(i+1)+'/'+n+')',cat:r.cat,isRecurring:true,provision:true}));
+          cursor.setDate(cursor.getDate()+14);
+        }
+      } else {
+        let cursor=new Date(startD);let safety=0;
+        while(cursor<=horizon&&safety<24){
+          safety++;
+          const dueStr=cursor.toISOString().split('T')[0];
+          const frids=fridaysBefore(dueStr,floorStr,28);
+          const n=frids.length;const portion=r.amount/n;
+          frids.forEach((fri,i)=>generated.push({id:r.id+'_m'+i+'_'+dueStr,type:'expense',date:fri,amount:portion,desc:r.desc+' ('+(i+1)+'/'+n+')',cat:r.cat,isRecurring:true,provision:true}));
+          cursor.setMonth(cursor.getMonth()+1);
+        }
+      }
+    }
+  });
+  return generated;
+}
+
+function allItems(){
+  return [...items,...generateRecurring()].sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',(i===0&&t==='plan')||(i===1&&t==='recurrentes')||(i===2&&t==='resumen'));
+  });
+  document.getElementById('sec-plan').classList.toggle('visible',t==='plan');
+  document.getElementById('sec-recurrentes').classList.toggle('visible',t==='recurrentes');
+  document.getElementById('sec-resumen').classList.toggle('visible',t==='resumen');
+  if(t==='resumen') renderSummary();
+  if(t==='recurrentes') renderRecurring();
+}
+
+function addItem(type){
+  if(type==='income'){
+    const date=document.getElementById('inc-date').value;
+    const amt=parseFloat(document.getElementById('inc-amount').value);
+    const desc=document.getElementById('inc-desc').value.trim();
+    if(!date||isNaN(amt)||amt<=0||!desc)return;
+    items.push({id:Date.now(),type:'income',date,amount:amt,desc,cat:'income'});
+    document.getElementById('inc-date').value='';document.getElementById('inc-amount').value='';document.getElementById('inc-desc').value='';
+  } else {
+    const date=document.getElementById('exp-date').value;
+    const amt=parseFloat(document.getElementById('exp-amount').value);
+    const desc=document.getElementById('exp-desc').value.trim();
+    const cat=document.getElementById('exp-cat').value;
+    if(!date||isNaN(amt)||amt<=0||!desc)return;
+    items.push({id:Date.now(),type:'expense',date,amount:amt,desc,cat});
+    document.getElementById('exp-date').value='';document.getElementById('exp-amount').value='';document.getElementById('exp-desc').value='';
+  }
+  save();renderItems();
+}
+
+function addRecurring(type){
+  const created=todayStr();
+  if(type==='income'){
+    const desc=document.getElementById('rinc-desc').value.trim();
+    const amt=parseFloat(document.getElementById('rinc-amount').value);
+    const freq=document.getElementById('rinc-freq').value;
+    const start=document.getElementById('rinc-start').value;
+    if(!desc||isNaN(amt)||amt<=0||!start)return;
+    recurring.push({id:Date.now(),type:'income',desc,amount:amt,freq,start,cat:'income',createdAt:created});
+    document.getElementById('rinc-desc').value='';document.getElementById('rinc-amount').value='';document.getElementById('rinc-start').value='';
+  } else {
+    const desc=document.getElementById('rexp-desc').value.trim();
+    const amt=parseFloat(document.getElementById('rexp-amount').value);
+    const freq=document.getElementById('rexp-freq').value;
+    const start=document.getElementById('rexp-start').value;
+    const cat=document.getElementById('rexp-cat').value;
+    if(!desc||isNaN(amt)||amt<=0||!start)return;
+    recurring.push({id:Date.now(),type:'expense',desc,amount:amt,freq,start,cat,createdAt:created});
+    document.getElementById('rexp-desc').value='';document.getElementById('rexp-amount').value='';document.getElementById('rexp-start').value='';
+  }
+  save();renderRecurring();renderItems();
+}
+
+function deleteItem(id){items=items.filter(i=>i.id!==id);save();renderItems();}
+function deleteRecurring(id){recurring=recurring.filter(r=>r.id!==id);save();renderRecurring();renderItems();}
+
+function renderItems(){
+  const el=document.getElementById('all-items');
+  const all=allItems();
+  if(!all.length){el.innerHTML='<div class="empty">Sin movimientos aún.</div>';return;}
+  el.innerHTML=all.map(it=>`
+    <div class="item-row">
+      <div class="item-dot" style="background:${DOT_COLORS[it.cat]||'#888'}"></div>
+      <div class="item-info">
+        <div class="item-desc">${it.desc}</div>
+        <div class="item-meta">${fmtDate(it.date)} · <span class="cat-badge ${CAT_COLORS[it.cat]}">${CAT_LABELS[it.cat]||it.cat}</span>${it.provision?' <span class="prov-badge">reserva</span>':it.isRecurring?' <span class="recur-badge">recurrente</span>':''}</div>
+      </div>
+      <div class="item-amount" style="color:${it.type==='income'?'#1D9E75':'#D85A30'}">${it.type==='income'?'+':'-'}${fmt(it.amount)}</div>
+      ${!it.isRecurring?`<button class="item-del" onclick="deleteItem(${it.id})">✕</button>`:'<div style="width:24px"></div>'}
+    </div>
+  `).join('');
+}
+
+function renderRecurring(){
+  const el=document.getElementById('recurring-list');
+  if(!recurring.length){el.innerHTML='<div class="empty">Sin recurrentes activos.</div>';return;}
+  el.innerHTML=recurring.map(r=>`
+    <div class="item-row">
+      <div class="item-dot" style="background:${DOT_COLORS[r.cat]||'#888'}"></div>
+      <div class="item-info">
+        <div class="item-desc">${r.desc}</div>
+        <div class="item-meta">${FREQ_LABELS[r.freq]} · cobro: ${fmtDate(r.start)} · <span class="cat-badge ${CAT_COLORS[r.cat]}">${CAT_LABELS[r.cat]}</span>${r.type==='expense'&&r.freq!=='weekly'?' <span class="prov-badge">con reserva</span>':''}</div>
+      </div>
+      <div class="item-amount" style="color:${r.type==='income'?'#1D9E75':'#D85A30'}">${r.type==='income'?'+':'-'}${fmt(r.amount)}</div>
+      <button class="item-del" onclick="deleteRecurring(${r.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+function toggleWeek(fri){
+  openWeeks[fri]=!openWeeks[fri];
+  const det=document.getElementById('det-'+fri);
+  const chev=document.getElementById('chev-'+fri);
+  if(det) det.classList.toggle('open',openWeeks[fri]);
+  if(chev) chev.classList.toggle('open',openWeeks[fri]);
+}
+
+function getWeekLabel(fri){
+  const f=new Date(fri+'T12:00:00');
+  const t=new Date(fri+'T12:00:00');t.setDate(t.getDate()+6);
+  const f2=x=>x.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+  return 'Vie '+f2(f)+' – Jue '+f2(t);
+}
+function getMonthKey(d){return d.slice(0,7);}
+function getMonthLabel(key){return new Date(key+'-15T12:00:00').toLocaleDateString('es-MX',{month:'long',year:'numeric'});}
+
+function renderSummary(){
+  const all=allItems();
+  if(!all.length){document.getElementById('month-summary').innerHTML='<div class="empty">Sin datos aún.</div>';return;}
+  const weeks={};
+  all.forEach(it=>{
+    const wk=weekFriday(it.date);
+    if(!weeks[wk])weeks[wk]={inc:0,exp:0,items:[]};
+    if(it.type==='income') weeks[wk].inc+=it.amount;
+    else weeks[wk].exp+=it.amount;
+    weeks[wk].items.push(it);
+  });
+  const months={};
+  Object.keys(weeks).sort().forEach(fri=>{
+    const mk=getMonthKey(fri);
+    if(!months[mk])months[mk]={weeks:[],inc:0,exp:0};
+    months[mk].weeks.push(fri);
+    months[mk].inc+=weeks[fri].inc;
+    months[mk].exp+=weeks[fri].exp;
+  });
+  const el=document.getElementById('month-summary');
+  el.innerHTML=Object.keys(months).sort().map(mk=>{
+    const mo=months[mk];const mBal=mo.inc-mo.exp;
+    const wHtml=mo.weeks.map(fri=>{
+      const w=weeks[fri];const bal=w.inc-w.exp;
+      const pct=w.inc>0?Math.min(100,Math.round(w.exp/w.inc*100)):100;
+      const bc=pct>90?'#D85A30':pct>65?'#EF9F27':'#5DCAA5';
+      const neg=bal<0;const isOpen=!!openWeeks[fri];
+      const sorted=[...w.items].sort((a,b)=>a.type==='income'&&b.type!=='income'?-1:b.type==='income'&&a.type!=='income'?1:a.desc.localeCompare(b.desc));
+      const detailRows=sorted.map(it=>`
+        <div class="detail-row">
+          <div class="detail-dot" style="background:${DOT_COLORS[it.cat]||'#888'}"></div>
+          <div class="detail-desc">${it.desc}</div>
+          <div class="detail-badges">
+            <span class="cat-badge ${CAT_COLORS[it.cat]}" style="font-size:9px;padding:1px 5px;">${CAT_LABELS[it.cat]||it.cat}</span>
+            ${it.provision?'<span class="prov-badge" style="font-size:9px;">reserva</span>':it.isRecurring?'<span class="recur-badge" style="font-size:9px;">rec.</span>':''}
+          </div>
+          <div class="detail-amount" style="color:${it.type==='income'?'#1D9E75':'#D85A30'}">${it.type==='income'?'+':'-'}${fmt(it.amount)}</div>
+        </div>`).join('');
+      return `<div class="week-block${neg?' negative':''}">
+        <div class="week-summary" onclick="toggleWeek('${fri}')">
+          <div class="week-head"><span class="week-lbl">${getWeekLabel(fri)}</span><span style="font-size:13px;font-weight:500;color:${neg?'#D85A30':'#1D9E75'}">${neg?'-':'+'}${fmt(bal)}</span></div>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${bc};"></div></div>
+          <div class="week-footer">
+            <span>Ingresos: <b style="color:#1D9E75">${fmt(w.inc)}</b> &nbsp; Gastos: <b style="color:#D85A30">${fmt(w.exp)}</b></span>
+            <span><span class="chevron${isOpen?' open':''}" id="chev-${fri}">▾</span> desglose</span>
+          </div>
+        </div>
+        <div class="week-detail${isOpen?' open':''}" id="det-${fri}">${detailRows}</div>
+      </div>`;
+    }).join('');
+    return `<div class="month-block">
+      <div class="month-header"><span class="month-title">${getMonthLabel(mk)}</span><span style="font-size:13px;font-weight:500;color:${mBal>=0?'#1D9E75':'#D85A30'}">${mBal>=0?'+':'-'}${fmt(mBal)}</span></div>
+      <div class="month-totals">
+        <div class="month-stat"><div class="month-stat-lbl">Ingresos</div><div class="month-stat-val green">${fmt(mo.inc)}</div></div>
+        <div class="month-stat"><div class="month-stat-lbl">Gastos</div><div class="month-stat-val red">${fmt(mo.exp)}</div></div>
+        <div class="month-stat"><div class="month-stat-lbl">Balance</div><div class="month-stat-val" style="color:${mBal>=0?'#1D9E75':'#D85A30'}">${mBal>=0?'+':'-'}${fmt(mBal)}</div></div>
+      </div>${wHtml}</div>`;
+  }).join('');
+}
+
+renderItems();
+</script>
